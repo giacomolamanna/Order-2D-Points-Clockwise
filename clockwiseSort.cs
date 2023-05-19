@@ -1,12 +1,13 @@
-public class ClockWise
-{
+    public class ClockWise
+    {
 
-            public List<Point2D> OrderPointsClockwise(List<Point2D> points)
-            {                
-                ComputeBoundingRectangle(points, out Point2D min, out Point2D max);
+        public static List<Point2D> OrderPointsClockwise(List<Point2D> points)
+        {
+            ComputeBoundingRectangle(points, out Point2D min, out Point2D max);
+            Point2D Center = GetCenter(points);
 
-                Point2D[] vertices = new Point2D[]
-                {
+            Point2D[] vertices = new Point2D[]
+            {
                     min,
                     new Point2D(min.X, Center.Y),
                     new Point2D(min.X, max.Y),
@@ -15,10 +16,10 @@ public class ClockWise
                     new Point2D(max.X, Center.Y),
                     new Point2D(max.X, min.Y),
                     new Point2D(Center.X, min.Y),
-                };
+            };
 
-                Triangle2D[] triangles = new Triangle2D[]
-                {
+            Triangle2D[] triangles = new Triangle2D[]
+            {
                     new Triangle2D(Center, vertices[0], vertices[1]),
                     new Triangle2D(Center, vertices[1], vertices[2]),
                     new Triangle2D(Center, vertices[2], vertices[3]),
@@ -27,86 +28,100 @@ public class ClockWise
                     new Triangle2D(Center, vertices[5], vertices[6]),
                     new Triangle2D(Center, vertices[6], vertices[7]),
                     new Triangle2D(Center, vertices[7], vertices[0])
-                };
+            };
 
-                List<Point2D> ordered = new List<Point2D>();
+            List<Point2D> ordered = new List<Point2D>();
 
-                for (int i = 0; i < triangles.Length; i++)
-                {
-                    List<Point2D> pts = new List<Point2D>();
-                    foreach (var p in points)
-                    {
-                        if (triangles[i].IsPointInsideTriangle(p))
-                            if (!pts.Contains(p))
-                                pts.Add(p);
-                    }
-
-                    ordered.AddRange(OrderPointsInTriangles(i, pts));
-                }
-                return RemoveDuplicates(ordered);
-            }
-
-            private List<Point2D> RemoveDuplicates(List<Point2D> points)
+            for (int i = 0; i < triangles.Length; i++)
             {
                 List<Point2D> pts = new List<Point2D>();
-
                 foreach (var p in points)
                 {
-                    if (!pts.Any())
-                        pts.Add(p);
-                    else if(pts.Last().DistanceTo(p) > 0.01)
-                        pts.Add(p);
+                    if (triangles[i].IsPointInsideTriangle(p))
+                        if (!pts.Contains(p))
+                            pts.Add(p);
                 }
 
-                return pts;
+                ordered.AddRange(OrderPointsInTriangles(i, pts));
+            }
+            return RemoveDuplicates(ordered);
+        }
+
+        private static Point2D GetCenter(List<Point2D> points)
+        {
+            double xCentroide = 0;
+            double yCentroide = 0;
+            foreach (Point2D p in points)
+            {
+                xCentroide += p.X;
+                yCentroide += p.Y;
+            }
+            xCentroide /= points.Count;
+            yCentroide /= points.Count;
+            return new Point2D(xCentroide, yCentroide);
+        }
+
+        private static List<Point2D> RemoveDuplicates(List<Point2D> points)
+        {
+            List<Point2D> pts = new List<Point2D>();
+
+            foreach (var p in points)
+            {
+                if (!pts.Any())
+                    pts.Add(p);
+                else if (pts.Last().DistanceTo(p) > 0.01)
+                    pts.Add(p);
             }
 
-            private List<Point2D> OrderPointsInTriangles(int index, List<Point2D> points)
-            {
-                switch (index)
-                {
-                    case 0:
-                        return points.OrderBy(p => p.Y).ToList();
-                    case 1:
-                        return points.OrderBy(p => p.Y).ToList();
-                    case 2:
-                        return points.OrderBy(p => p.X).ToList();
-                    case 3:
-                        return points.OrderBy(p => p.X).ToList();
-                    case 4:
-                        return points.OrderByDescending(p => p.Y).ToList();
-                    case 5:
-                        return points.OrderByDescending(p => p.Y).ToList();
-                    case 6:
-                        return points.OrderByDescending(p => p.X).ToList();
-                    case 7:
-                        return points.OrderByDescending(p => p.X).ToList();
+            return pts;
+        }
 
-                    default:
-                        return new List<Point2D>();
-                }
-            }
-            
-            private void ComputeBoundingRectangle(List<Point2D> points, out Point2D min, out Point2D max)
+        private static List<Point2D> OrderPointsInTriangles(int index, List<Point2D> points)
+        {
+            switch (index)
             {
-                max = points[0];
-                min = points[0];
-                foreach (var p in points)
-                {
-                    min = Min(min, p);
-                    max = Max(max, p);
-                }
+                case 0:
+                    return points.OrderBy(p => p.Y).ToList();
+                case 1:
+                    return points.OrderBy(p => p.Y).ToList();
+                case 2:
+                    return points.OrderBy(p => p.X).ToList();
+                case 3:
+                    return points.OrderBy(p => p.X).ToList();
+                case 4:
+                    return points.OrderByDescending(p => p.Y).ToList();
+                case 5:
+                    return points.OrderByDescending(p => p.Y).ToList();
+                case 6:
+                    return points.OrderByDescending(p => p.X).ToList();
+                case 7:
+                    return points.OrderByDescending(p => p.X).ToList();
+
+                default:
+                    return new List<Point2D>();
             }
-            
-            private Point2D Min(Point2D p1, Point2D p2)
+        }
+
+        private static void ComputeBoundingRectangle(List<Point2D> points, out Point2D min, out Point2D max)
+        {
+            max = points[0];
+            min = points[0];
+            foreach (var p in points)
             {
-                return new Point2D(Math.Min(p1.X, p2.X), Math.Min(p1.Y, p2.Y));
+                min = Min(min, p);
+                max = Max(max, p);
             }
-            private Point2D Max(Point2D p1, Point2D p2)
-            {
-                return new Point2D(Math.Max(p1.X, p2.X), Math.Max(p1.Y, p2.Y));
-            }
-}
+        }
+
+        private static Point2D Min(Point2D p1, Point2D p2)
+        {
+            return new Point2D(Math.Min(p1.X, p2.X), Math.Min(p1.Y, p2.Y));
+        }
+        private static Point2D Max(Point2D p1, Point2D p2)
+        {
+            return new Point2D(Math.Max(p1.X, p2.X), Math.Max(p1.Y, p2.Y));
+        }
+    }
 
 
 public class Point2D
